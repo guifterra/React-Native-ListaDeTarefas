@@ -1,24 +1,27 @@
-import { View, Text, StyleSheet, Button } from "react-native";
-import React from "react";
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 
-export default function Details({ route, navigation }) {
-    
-    const allDetails = route.params;
-    
-    return (
-        <View style={styles.container}>
-            <Text>Olá Details! { allDetails.titulo } </Text>
-            <Button title="Voltar" onPress={ () => {
-                navigation.navigate("Home");
-            } } />
-        </View>
-    );
+export default function Details({ route }) {
+  const { tarefa } = route.params;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>{tarefa.titulo}</Text>
+      <Text>{tarefa.descricao}</Text>
+      <Text>Data: {tarefa.data}</Text>
+      <Text>Status: {tarefa.status}</Text>
+      <Text>Prioridade: {tarefa.prioridade}</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
+  container: {
+    padding: 16,
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
 });

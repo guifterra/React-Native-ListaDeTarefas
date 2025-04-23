@@ -1,103 +1,38 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Criando um contexto chamado CounterContext
 export const ListaContext = createContext();
 
-// Esse componente vai fornecer os dados do contador para os outros
-export function ListaProvider({ children }) {
+export const ListaProvider = ({ children }) => {
+  const [tarefas, setTarefas] = useState([]);
 
-  const [myList, setMyList] = useState([
-    {
-      id: 1,
-      titulo: 'Comprar leite',
-      descricao: 'Comprar 2 litros de leite',
-      dataFinal: '2025-04-15',
-      status: 'A fazer',
-      prioridade: 'Média',
-    },
-    {
-      id: 2,
-      titulo: 'Estudar React',
-      descricao: 'Revisar componentes e hooks',
-      dataFinal: '2025-04-20',
-      status: 'A fazer',
-      prioridade: 'Alta',
-    },
-    {
-      id: 3,
-      titulo: 'Fazer compras',
-      descricao: 'Comprar itens para o almoço',
-      dataFinal: '2025-04-16',
-      status: 'A fazer',
-      prioridade: 'Baixa',
-    }
-  ]);
-  const [titulo, setTitulo] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [dataFinal, setDataFinal] = useState('');
-  const [status, setStatus] = useState('A fazer');
-  const [prioridade, setPrioridade] = useState('Baixa');
-  const [editandoId, setEditandoId] = useState(null);
-
-  const adicionarOuEditarItem = () => {
-    const novaTarefa = {
-      id: editandoId || Date.now(),
-      titulo,
-      descricao,
-      dataFinal,
-      status,
-      prioridade
+  useEffect(() => {
+    const carregarDados = async () => {
+      const dadosSalvos = await AsyncStorage.getItem('tarefas');
+      if (dadosSalvos) setTarefas(JSON.parse(dadosSalvos));
     };
+    carregarDados();
+  }, []);
 
-    if (editandoId) {
-      setMyList(prev => prev.map(item => item.id === editandoId ? novaTarefa : item));
-      setEditandoId(null);
-    } else {
-      setMyList(prev => [...prev, novaTarefa]);
-    }
+  useEffect(() => {
+    AsyncStorage.setItem('tarefas', JSON.stringify(tarefas));
+  }, [tarefas]);
 
-    // Limpar campos
-    setTitulo('');
-    setDescricao('');
-    setDataFinal('');
-    setStatus('A fazer');
-    setPrioridade('Baixa');
+  const adicionarTarefa = (tarefa) => {
+    setTarefas([...tarefas, tarefa]);
   };
 
-  const editarItem = (item) => {
-    setTitulo(item.titulo);
-    setDescricao(item.descricao);
-    setDataFinal(item.dataFinal);
-    setStatus(item.status);
-    setPrioridade(item.prioridade);
-    setEditandoId(item.id);
+  const editarTarefa = (id, novaTarefa) => {
+    setTarefas(tarefas.map(t => (t.id === id ? novaTarefa : t)));
   };
 
-  const excluirItem = (id) => {
-    setMyList(prev => prev.filter(item => item.id !== id));
+  const excluirTarefa = (id) => {
+    setTarefas(tarefas.filter(t => t.id !== id));
   };
 
   return (
-    <ListaContext.Provider
-      value={{
-        myList,
-        setMyList,
-        titulo,
-        setTitulo,
-        descricao,
-        setDescricao,
-        dataFinal,
-        setDataFinal,
-        status,
-        setStatus,
-        prioridade,
-        setPrioridade,
-        adicionarOuEditarItem,
-        editarItem,
-        excluirItem,
-      }}
-    >
+    <ListaContext.Provider value={{ tarefas, adicionarTarefa, editarTarefa, excluirTarefa }}>
       {children}
     </ListaContext.Provider>
   );
-}
+};
